@@ -4,39 +4,62 @@
 #include<iostream>
 
 vector<Task>Parser::readTasks(string filename){
-    vector<Task>tasks;
-    ifstream file(filename);
-    if(!file){
+    vector<Task>tasks; // إنشاء قائمة لتخزين جميع المهام
+    ifstream file(filename); // فتح ملف الإدخال
+    if(!file){ // التحقق من وجود الملف
         cout<<"File not found!"<<endl;
         return tasks;
     }
     string line;
+    // قراءة الملف سطرًا سطرًا
     while(getline(file,line)){
+        if(line.empty()){ // تجاهل الأسطر الفارغة
+         continue;
+        } 
+       // تحويل السطر إلى stream لسهولة القراءة
         stringstream ss(line);
-        string word;
-        Task t;
-        ss>>word;   // TASK المهمة
-        ss>>t.id;
-
-        ss>>word;     // DURATION مدة المهمة
-        ss>>t.duration;
-        if(t.duration<=0){
-        cout<<"Error: Invalid Duration in Task "<<t.id<<endl;
-}
-
-        ss>>word;     // RESOURCE الموارد
-        ss>>t.resource;
-        if(t.resource<=0){
-        cout<<"Error: Invalid Resource in Task "<<t.id<<endl;
+        // قراءة أول كلمة من السطر
+        string firstWord;
+        ss>>firstWord;
+        // تجاهل أي سطر لا يبدأ بكلمة TASK
+        if(firstWord!="TASK"){
+        continue;
         }
-
-        ss>>word;  // DEPENDS المهام الي تعتمد عليها كل مهمة
+        string keyword;
+        // إنشاء مهمة جديدة
+        Task t;
+        // متغير لتحديد صلاحية المهمة
+        bool valid = true;
+        // قراءة رقم المهمة
+        ss>>t.id;
+        // قراءة مدة المهمة
+        ss>>keyword;     // DURATION مدة المهمة
+        ss>>t.duration;
+        // التحقق من أن المدة أكبر من صفر
+        if(t.duration<=0){
+         cout<<"Error: Invalid Duration in Task "<<t.id<<endl;
+         valid=false;
+        }
+        // قراءة عدد الموارد المطلوبة
+        ss>>keyword;     // RESOURCE الموارد
+        ss>>t.resource;
+        // التحقق من أن عدد الموارد أكبر من صفر
+        if(t.resource<=0){
+         cout<<"Error: Invalid Resource in Task "<<t.id<<endl;
+         valid=false;
+        }
+        // قراءة المهام المعتمدة عليها
+        ss>>keyword;  // DEPENDS المهام الي تعتمد عليها كل مهمة
         int dep;
         while(ss>>dep){
             t.dependencies.push_back(dep);
         }
-        tasks.push_back(t);
+        // إضافة المهمة فقط إذا كانت صحيحة
+        if(valid){
+         tasks.push_back(t);
+        }
     }
+    // التحقق من عدم تكرار IDs المهام
     for(int i=0;i<tasks.size();i++){
           for(int j=i+1;j<tasks.size();j++){
               if(tasks[i].id==tasks[j].id){
@@ -44,6 +67,7 @@ vector<Task>Parser::readTasks(string filename){
         }
     }
 }
+// التحقق من وجود جميع الـ Dependencies
 for(int i=0;i<tasks.size();i++){
     for(int j=0;j<tasks[i].dependencies.size();j++){
         int depId=tasks[i].dependencies[j];
@@ -54,10 +78,12 @@ for(int i=0;i<tasks.size();i++){
                 break;
             }
         }
+        // طباعة خطأ إذا كانت المهمة المعتمدة غير موجودة
         if(!found){
-          cout<<"Error: Task"<<tasks[i].id<<"depends on non existing Task"<<depId<<endl;
+          cout<<"Error: Task "<<tasks[i].id<<" depends on non-existing Task "<<depId<<endl;
         }
     }
 }
+    // إرجاع جميع المهام الصحيحة
     return tasks;
 }
