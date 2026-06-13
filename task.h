@@ -1,12 +1,14 @@
 #ifndef TASK_H
 #define TASK_H
-#include<vector>
+#include <vector>
 
 using namespace std;
-struct Task{
+struct Task
+{
     int id;
     int duration;
-    int resource;
-    vector<int>dependencies;
+    int resource_demand;
+    vector<int> dependencies;
 };
+
 #endif
