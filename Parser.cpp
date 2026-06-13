@@ -42,9 +42,9 @@ vector<Task>Parser::readTasks(string filename){
         }
         // قراءة عدد الموارد المطلوبة
         ss>>keyword;     // RESOURCE الموارد
-        ss>>t.resource;
+        ss >> t.resource_demand;
         // التحقق من أن عدد الموارد أكبر من صفر
-        if(t.resource<=0){
+        if(t.resource_demand <= 0){
          cout<<"Error: Invalid Resource in Task "<<t.id<<endl;
          valid=false;
         }

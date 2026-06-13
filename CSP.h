@@ -19,4 +19,6 @@ struct CSP
             }
         }
     }
-}
+};
+
+#endif
