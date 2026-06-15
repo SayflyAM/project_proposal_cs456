@@ -1,9 +1,20 @@
-#include<iostream>
+#include <iostream>
 #include "Parser.h"
+#include "CSP.h"
 
 using namespace std;
-int main(){
-    Parser parser;
-    vector<Task>tasks=parser.readTasks("Testing/valid_input.txt");
-    cout<<"Number of Tasks = "<<tasks.size()<<endl;
+int main()
+{
+    vector<Task> tasks;
+    ResourceConstraint resConstraint;
+    vector<PrecedenceConstraint> precConstraints;
+    int maxTime = 0;
+
+    Parser::parseFile("data/test_5_tasks.txt", tasks, resConstraint, precConstraints, maxTime);
+
+    int actualNumTasks = tasks.size() - 1;
+
+    CSP cspModel;
+
+    cspModel.initializeDomains(actualNumTasks, maxTime);
 }

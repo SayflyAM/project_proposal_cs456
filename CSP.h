@@ -5,17 +5,17 @@ using namespace std;
 
 struct CSP
 {
-    vector<vector<int>> domains;
+    std::vector<std::vector<int>> domains;
 
-    void initialize(int numTasks, int maxTime)
+    void initializeDomains(int numTasks, int maxTime)
     {
-
         domains.resize(numTasks + 1);
-        for (int i = 1; i <= numTasks; i++)
+
+        for (int i = 1; i <= numTasks; ++i)
         {
             for (int t = 0; t <= maxTime; t++)
             {
-                domains[i].push_back(t);
+            domains[i].push_back(t);
             }
         }
     }
