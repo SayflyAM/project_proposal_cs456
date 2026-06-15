@@ -1,13 +1,5 @@
-#ifndef CONSTRAINTRS_H
-#define CONSTRAINTRS_H
-
-#include <vector>
-
-struct PrecedenceConstraint
-{
-    int beforeTaskId;
-    int afterTaskId;
-};
+#ifndef CONSTRAINTS_H
+#define CONSTRAINTS_H
 
 struct ResourceConstraint
 {

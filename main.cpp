@@ -1,6 +1,7 @@
 #include <iostream>
 #include "Parser.h"
 #include "CSP.h"
+#include "Solver.h"
 
 using namespace std;
 int main()
@@ -17,4 +18,21 @@ int main()
     CSP cspModel;
 
     cspModel.initializeDomains(actualNumTasks, maxTime);
-}
+
+    Solver solver;
+
+    if (solver.backtrack(tasks, csp, 0))
+    {
+        cout << "Solution Found!" << endl;
+
+        for (int i = 1; i <= tasks.size(); i++)
+        {
+            cout << "Task " << i << " Start Time = " << csp.assignment[i] << endl;
+        }
+    }
+    else
+    {
+        cout << "No Solution Found!" << endl;
+    }
+
+    return 0;

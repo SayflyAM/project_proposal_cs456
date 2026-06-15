@@ -104,21 +104,4 @@ vector<Task> Parser::readTasks(string filename)
     // إرجاع جميع المهام الصحيحة
     return tasks;
 }
-
-string dep;
-while (ss >> dep)
-{
-    if (dep != "-")
-    {
-        t.dependencies.push_back(std::stoi(dep));
-        PrecedenCeconstraint m;
-
-        m.beforeTaskId = stoi(dep);
-        m.afterTaskId = t.id;
-        precConstraints.push_back(m);
-
-
-        
-    }
-    tasks.push_back(t.id+1);
 }
