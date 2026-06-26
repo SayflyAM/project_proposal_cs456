@@ -26,7 +26,7 @@ int main()
 
     Solver solver;
 
-    // Configuration 1: Basic Backtracking
+    //  Basic Backtracking
     {
         cout << "--- Running Configuration 1: Basic Backtracking ---" << endl;
         CSP cspBasic = cspModel; // copy initial model
@@ -45,7 +45,7 @@ int main()
         cout << endl;
     }
 
-    // Configuration 2: Backtracking with Forward Checking
+    //  Backtracking with Forward Checking
     {
         cout << "--- Running Configuration 2: Backtracking + Forward Checking ---" << endl;
         CSP cspFC = cspModel;
@@ -64,7 +64,7 @@ int main()
         cout << endl;
     }
 
-    // Configuration 3: Backtracking + Forward Checking + MRV Heuristic
+    // Backtracking + Forward Checking + MRV Heuristic
     {
         cout << "--- Running Configuration 3: Backtracking + FC + MRV (Full Heuristics) ---" << endl;
         CSP cspFull = cspModel;
@@ -83,7 +83,7 @@ int main()
         cout << endl;
     }
 
-    // Configuration 4: Iterative Makespan Optimization (Phase 7 of the Project Plan)
+    //  Iterative Makespan Optimization (Phase 7 of the Project Plan)
     {
         cout << "--- Running Configuration 4: Iterative Makespan Optimization ---" << endl;
         int bestMakespan = maxTime;
