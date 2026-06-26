@@ -1,27 +1,46 @@
 #include "Solver.h"
+#include <iostream>
 
-bool Solver::isValid(int taskIndex,int startTime,vector<Task>& tasks,CSP& csp)
+bool Solver::isValid(int taskIndex, int startTime, vector<Task>& tasks, CSP& csp)
 {
+    // 1. Precedence Constraint Check
     Task currentTask = tasks[taskIndex];
-
-    for(int i = 0; i < currentTask.dependencies.size(); i++)
+    for (int depId : currentTask.dependencies)
     {
-        int depId = currentTask.dependencies[i];
-
-        for(int j = 0; j < tasks.size(); j++)
+        if (csp.assignment[depId] == -1)
         {
-            if(tasks[j].id == depId)
-          {
-            if(csp.assignment[j+1] == -1)
+            return false;
+        }
+        int finishTime = csp.assignment[depId] + tasks[depId].duration;
+        if (startTime < finishTime)
+        {
+            return false;
+        }
+    }
+
+    // 2. Resource Constraint Check
+    int numTasks = tasks.size() - 1;
+    for (int t = startTime; t < startTime + currentTask.duration; t++)
+    {
+        int sumResources = currentTask.resource_demand;
+        for (int otherId = 1; otherId <= numTasks; otherId++)
+        {
+            if (otherId == taskIndex)
+                continue;
+            
+            if (csp.assignment[otherId] != -1)
             {
-              return false;
+                int otherStart = csp.assignment[otherId];
+                int otherDuration = tasks[otherId].duration;
+                if (t >= otherStart && t < otherStart + otherDuration)
+                {
+                    sumResources += tasks[otherId].resource_demand;
+                }
             }
-            int finishTime = csp.assignment[j+1] + tasks[j].duration;
-            if(startTime < finishTime)
-            {
-              return false;
-            }
-          }
+        }
+        if (sumResources > csp.resourceLimit)
+        {
+            return false;
         }
     }
 
@@ -32,73 +51,65 @@ int Solver::selectMRVVariable(vector<Task>& tasks, CSP& csp)
 {
     int bestTask = -1;
     int smallestDomain = 1000000;
+    int numTasks = tasks.size() - 1;
 
-    for(int i = 0; i < tasks.size(); i++)
+    for (int id = 1; id <= numTasks; id++)
     {
-        if(csp.assignment[i + 1] != -1)
+        if (csp.assignment[id] != -1)
         {
             continue;
         }
 
         bool ready = true;
-
-for(int j = 0; j < tasks[i].dependencies.size(); j++)
-{
-    int depId = tasks[i].dependencies[j];
-
-    for(int k = 0; k < tasks.size(); k++)
-    {
-        if(tasks[k].id == depId)
+        for (int depId : tasks[id].dependencies)
         {
-            if(csp.assignment[k + 1] == -1)
+            if (csp.assignment[depId] == -1)
             {
                 ready = false;
+                break;
             }
         }
-    }
-}
 
-if(!ready)
-{
-    continue;
-}
+        if (!ready)
+        {
+            continue;
+        }
 
-        int domainSize = csp.domains[i + 1].size();
-
-        if(domainSize < smallestDomain)
+        int domainSize = csp.domains[id].size();
+        if (domainSize < smallestDomain)
         {
             smallestDomain = domainSize;
-            bestTask = i;
+            bestTask = id;
         }
     }
 
     return bestTask;
 }
 
-bool Solver::forwardCheck(vector<Task>& tasks,CSP& csp,int taskIndex,int startTime)
+bool Solver::forwardCheck(vector<Task>& tasks, CSP& csp, int taskIndex, int startTime)
 {
     int finishTime = startTime + tasks[taskIndex].duration;
+    int numTasks = tasks.size() - 1;
 
-    for(int i = 0; i < tasks.size(); i++)
+    for (int id = 1; id <= numTasks; id++)
     {
-        for(int j = 0; j < tasks[i].dependencies.size(); j++)
+        if (csp.assignment[id] != -1)
+            continue;
+
+        for (int depId : tasks[id].dependencies)
         {
-            if(tasks[i].dependencies[j] == tasks[taskIndex].id)
+            if (depId == taskIndex)
             {
                 vector<int> newDomain;
-
-                for(int k = 0; k < csp.domains[i + 1].size();k++)
+                for (int val : csp.domains[id])
                 {
-                    int value = csp.domains[i + 1][k];
-
-                    if(value >= finishTime)
+                    if (val >= finishTime)
                     {
-                        newDomain.push_back(value);
+                        newDomain.push_back(val);
                     }
                 }
-
-                csp.domains[i + 1] = newDomain;
-                if(csp.domains[i + 1].empty())
+                csp.domains[id] = newDomain;
+                if (csp.domains[id].empty())
                 {
                     return false;
                 }
@@ -109,46 +120,75 @@ bool Solver::forwardCheck(vector<Task>& tasks,CSP& csp,int taskIndex,int startTi
     return true;
 }
 
-bool Solver::backtrack(vector<Task>& tasks,CSP& csp,int taskIndex)
+int Solver::selectNextVariable(vector<Task>& tasks, CSP& csp, bool useMRV)
 {
-    bool complete = true;
-
-    for(int i = 1; i < csp.assignment.size(); i++)
+    if (useMRV)
     {
-       if(csp.assignment[i] == -1)
-       {  
-        complete = false;
-        break;
-       }
+        return selectMRVVariable(tasks, csp);
     }
 
-if(complete)
-{
-    return true;
-}  
-taskIndex = selectMRVVariable(tasks, csp);
-
-    for(int i = 0; i < csp.domains[taskIndex + 1].size(); i++)
+    int numTasks = tasks.size() - 1;
+    for (int id = 1; id <= numTasks; id++)
     {
-        int startTime = csp.domains[taskIndex + 1][i];
-
-    if(isValid(taskIndex, startTime, tasks, csp))
-{
-    csp.assignment[taskIndex + 1] = startTime;
-
-    vector<vector<int>> savedDomains = csp.domains;
-
-    if(forwardCheck(tasks, csp, taskIndex, startTime))
-    {
-        if(backtrack(tasks, csp, -1))
+        if (csp.assignment[id] == -1)
         {
-            return true;
+            return id;
         }
     }
-    
-    csp.domains = savedDomains;
-    csp.assignment[taskIndex + 1] = -1;
+    return -1;
 }
+
+bool Solver::backtrack(vector<Task>& tasks, CSP& csp, bool useMRV, bool useFC)
+{
+    int numTasks = tasks.size() - 1;
+    bool complete = true;
+
+    for (int id = 1; id <= numTasks; id++)
+    {
+        if (csp.assignment[id] == -1)
+        {  
+            complete = false;
+            break;
+        }
+    }
+
+    if (complete)
+    {
+        return true;
+    }  
+
+    int nextTask = selectNextVariable(tasks, csp, useMRV);
+    if (nextTask == -1)
+    {
+        return false;
+    }
+
+    vector<int> currentDomain = csp.domains[nextTask];
+
+    for (int startTime : currentDomain)
+    {
+        if (isValid(nextTask, startTime, tasks, csp))
+        {
+            csp.assignment[nextTask] = startTime;
+            vector<vector<int>> savedDomains = csp.domains;
+
+            bool fcOk = true;
+            if (useFC)
+            {
+                fcOk = forwardCheck(tasks, csp, nextTask, startTime);
+            }
+
+            if (fcOk)
+            {
+                if (backtrack(tasks, csp, useMRV, useFC))
+                {
+                    return true;
+                }
+            }
+            
+            csp.domains = savedDomains;
+            csp.assignment[nextTask] = -1;
+        }
     }
 
     return false;

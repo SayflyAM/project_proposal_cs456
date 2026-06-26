@@ -10,10 +10,11 @@ using namespace std;
 class Solver
 {
 public:
-    bool isValid(int taskIndex,int startTime,vector<Task>& tasks,CSP& csp);
-    bool backtrack(vector<Task>& tasks,CSP& csp,int taskIndex);
+    bool isValid(int taskIndex, int startTime, vector<Task>& tasks, CSP& csp);
+    bool backtrack(vector<Task>& tasks, CSP& csp, bool useMRV = true, bool useFC = true);
     int selectMRVVariable(vector<Task>& tasks, CSP& csp);
-    bool forwardCheck(vector<Task>& tasks,CSP& csp,int taskIndex,int startTime);
+    int selectNextVariable(vector<Task>& tasks, CSP& csp, bool useMRV);
+    bool forwardCheck(vector<Task>& tasks, CSP& csp, int taskIndex, int startTime);
 };
 
 #endif

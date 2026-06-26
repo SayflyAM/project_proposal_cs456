@@ -15,6 +15,8 @@ using namespace std;
 class Parser
 {
 public:
+    static vector<Task> readTasks(string filename);
+
     static bool parseFile(const std::string &filename,
                           vector<Task> &tasks,
                           ResourceConstraint &resConstraint,

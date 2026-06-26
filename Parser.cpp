@@ -104,4 +104,3 @@ vector<Task> Parser::readTasks(string filename)
     // إرجاع جميع المهام الصحيحة
     return tasks;
 }
-}
